@@ -1384,7 +1384,7 @@ const RENDER = {
         else { anyBad = true; setState(f, "bad"); }
       }));
       report(r, ok, ALL.length, new Set(), true);
-      if (ok < ALL.length && !anyBad) showFb(r, "bad", "Everything you wrote is correct, but some words are missing. Find all ten words!");
+      if (ok < ALL.length && !anyBad) showFb(r, "bad", "Everything you wrote is correct, but some words are missing. Find all " + ALL.length + " words!");
     }, () => { s.v = {}; s.found = []; start = null; save(); cols.flat().forEach(f => { f.value = ""; setState(f, ""); }); paint(); });
   },
 

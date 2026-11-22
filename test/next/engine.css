@@ -83,6 +83,7 @@ input.gap:focus,textarea:focus{border-color:var(--blue);outline:none}
 /* list of gap sentences */
 ol.items{margin:0;padding-left:1.6em}
 ol.items li{margin:0 0 12px;padding-left:4px}
+ol.items.nonum{list-style:none;padding-left:0}
 
 /* matching */
 .match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px;align-items:start}
