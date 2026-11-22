@@ -774,3 +774,6 @@ ol.talk .tans summary{padding:3px 10px;font-size:14px}
 .sncell.start{background:#2D5B8A;color:#fff}
 .sncell.miss{background:#E5534B;color:#fff}
 .sncell.found.f0{background:#8BD17C}.sncell.found.f1{background:#7FC4E8}.sncell.found.f2{background:#F5B971}.sncell.found.f3{background:#C9A7E8}
+
+.fcauto{display:inline-flex;align-items:center;gap:.3em;font-size:.9em;font-weight:600;cursor:pointer;white-space:nowrap}
+.fcauto input{width:1.1em;height:1.1em;margin:0}

@@ -1862,6 +1862,12 @@ const RENDER = {
     bEN.addEventListener("click", () => { dir = "en"; start(); });
     if (deckBtns.length) bar.append(...deckBtns, el("span", { class: "fcsep" }));
     bar.append(bPL, bEN);
+    /* 🔊 Auto-read: czyta angielską stronę, gdy tylko jest widoczna (zapamiętane w przeglądarce) */
+    let autoSay = false; try { autoSay = localStorage.getItem("fcAutoSay") === "1"; } catch (e) {}
+    const autoCb = el("input", { type: "checkbox" }); autoCb.checked = autoSay;
+    autoCb.addEventListener("change", () => { autoSay = autoCb.checked; try { localStorage.setItem("fcAutoSay", autoSay ? "1" : "0"); } catch (e) {} if (autoSay && cur != null && (dir === "en" || flipped)) speak(D()[cur].say || D()[cur].en); });
+    bar.append(el("span", { class: "fcsep" }), el("label", { class: "fcauto" }, autoCb, " 🔊 Read aloud"));
+    const autoRead = () => { if (autoSay && cur != null) speak(D()[cur].say || D()[cur].en); };
     const prog = el("div", { class: "scprog" }, el("span"));
     const count = el("div", { class: "sccount" });
     const front = el("div", { class: "fcf" }), back = el("div", { class: "fcb" });
@@ -1931,14 +1937,14 @@ const RENDER = {
         } else endBox.append(el("div", { class: "scq" }, review.size ? "👏 Good work! Practise the “not yet” cards once more." : "🎉 Great! You know all the cards."));
         return;
       }
-      card.hidden = false; cur = queue.shift(); paintCard(D()[cur]);
+      card.hidden = false; cur = queue.shift(); paintCard(D()[cur]); if (dir === "en") autoRead();
       flipB.hidden = false; yes.hidden = no.hidden = true; again.hidden = false; onlyNo.hidden = true;
       prevB.hidden = !hist.length;
     }
     function flip(){
       if (cur == null) return;
       flipped = !flipped; card.classList.toggle("flip", flipped);
-      if (flipped){ yes.hidden = no.hidden = false; }
+      if (flipped){ yes.hidden = no.hidden = false; if (dir === "pl") autoRead(); }
     }
     card.addEventListener("click", ev => { if (ev.target.closest(".say")) return; flip(); });
     card.addEventListener("keydown", ev => {
