@@ -1,0 +1,86 @@
+/* Strona testowa silnika: wszystkie główne typy zadań w obu wersjach.
+   Treść przykładowa (własna), bez materiałów wydawnictwa.
+   Budowanie: python3 ../tools/build.py demo.src.js --out . --materials materialy-demo.js */
+PAGE = {
+slug: "prev-demo",
+title: "Previous lesson",
+description: "Test page with every main exercise type.",
+series: "demo", unit: 1, lesson: 1,
+hero: '<svg viewBox="0 0 120 110" aria-hidden="true"><rect x="20" y="40" width="80" height="60" rx="6" fill="#2D5B8A"/><path d="M10 45 60 8l50 37z" fill="#B4472F"/><rect x="50" y="68" width="20" height="32" fill="#F2C94C"/></svg>',
+CONFIG: {
+  media: { song: { title: "Example recording", type: "audio", url: "" } },
+  answers: { tf: ["T", "F", "T"], dlg: ["are", "Is", "isn't"] }
+},
+IMAGES: {
+  sdA: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23FDF6E3%22/%3E%3Crect%20y%3D%22220%22%20width%3D%22400%22%20height%3D%2280%22%20fill%3D%22%23C9A27C%22/%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%2290%22%20height%3D%2270%22%20fill%3D%22%239FD3F2%22%20stroke%3D%22%237a5%22%20stroke-width%3D%226%22/%3E%3Crect%20x%3D%22200%22%20y%3D%22150%22%20width%3D%22150%22%20height%3D%2270%22%20rx%3D%2210%22%20fill%3D%22%233B7DD8%22/%3E%3Crect%20x%3D%22200%22%20y%3D%22130%22%20width%3D%22150%22%20height%3D%2230%22%20rx%3D%2210%22%20fill%3D%22%235B97E8%22/%3E%3Ccircle%20cx%3D%22330%22%20cy%3D%2260%22%20r%3D%2222%22%20fill%3D%22%23F2C94C%22/%3E%3Crect%20x%3D%2260%22%20y%3D%22170%22%20width%3D%2220%22%20height%3D%2250%22%20fill%3D%22%237a5%22/%3E%3Ccircle%20cx%3D%2270%22%20cy%3D%22160%22%20r%3D%2222%22%20fill%3D%22%234CAF50%22/%3E%3Crect%20x%3D%22150%22%20y%3D%22235%22%20width%3D%2260%22%20height%3D%2230%22%20fill%3D%22%23B4472F%22/%3E%3C/svg%3E",
+  sdB: "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22%23FDF6E3%22/%3E%3Crect%20y%3D%22220%22%20width%3D%22400%22%20height%3D%2280%22%20fill%3D%22%23C9A27C%22/%3E%3Crect%20x%3D%2240%22%20y%3D%2240%22%20width%3D%2290%22%20height%3D%2270%22%20fill%3D%22%239FD3F2%22%20stroke%3D%22%237a5%22%20stroke-width%3D%226%22/%3E%3Crect%20x%3D%22200%22%20y%3D%22150%22%20width%3D%22150%22%20height%3D%2270%22%20rx%3D%2210%22%20fill%3D%22%233B7DD8%22/%3E%3Crect%20x%3D%22200%22%20y%3D%22130%22%20width%3D%22150%22%20height%3D%2230%22%20rx%3D%2210%22%20fill%3D%22%235B97E8%22/%3E%3Ccircle%20cx%3D%22330%22%20cy%3D%2260%22%20r%3D%2222%22%20fill%3D%22%23E57373%22/%3E%3Crect%20x%3D%2260%22%20y%3D%22170%22%20width%3D%2220%22%20height%3D%2250%22%20fill%3D%22%237a5%22/%3E%3Crect%20x%3D%22150%22%20y%3D%22235%22%20width%3D%2260%22%20height%3D%2230%22%20fill%3D%22%232D5B8A%22/%3E%3Crect%20x%3D%22250%22%20y%3D%2295%22%20width%3D%2230%22%20height%3D%2235%22%20fill%3D%22%238D6E63%22/%3E%3C/svg%3E",
+  a: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80"><text x="50" y="60" font-size="60" text-anchor="middle">🛋️</text></svg>'),
+  b: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80"><text x="50" y="60" font-size="60" text-anchor="middle">🛏️</text></svg>'),
+  c: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80"><text x="50" y="60" font-size="60" text-anchor="middle">🚪</text></svg>')
+},
+RULES: {
+  thereis: "<p><b>There is</b> + 1 rzecz, <b>there are</b> + 2 i więcej.</p>"
+},
+EXERCISES: [
+  { id: "fc", type: "flashcards", title: "Flashcards",
+    decks: [
+      { name: "Words", cards: [
+        { pl: "sofa", en: "sofa", img: "🛋️" },
+        { pl: "łóżko", en: "bed", img: "🛏️" },
+        { pl: "drzwi", en: "door", img: "🚪" },
+        { pl: "okno", en: "window", img: "🪟" } ] },
+      { name: "Grammar", cards: [
+        { pl: "W kuchni są dwa krzesła.", en: "There are two chairs in the kitchen.", note: "2+ rzeczy → <b>there are</b>" },
+        { pl: "W pokoju jest lampa.", en: "There is a lamp in the room.", note: "1 rzecz → <b>there is</b>" } ] }
+    ] },
+  { id: "match", type: "match", title: "Furniture", page: "SB p. 24, ex. 1", kw: "SOFA", speak: true, instr: "Match the words to the pictures.",
+    words: ["sofa", "bed", "door"], letters: ["a", "b", "c"], key: ["a", "b", "c"], cols: 3 },
+  { id: "gaps", type: "gaps", page: "WB p. 20, ex. 2", mode: "both", interaction: "individual, check in chorus", title: "There is / there are", kw: "LAMP", rule: ["thereis"], instr: "Complete.",
+    items: [["", ["There is|There's"], " a lamp."], ["", ["There are"], " two beds."]] },
+  { id: "tf", type: "tf", title: "True or false", kw: "DOOR", keyFrom: "tf", media: "song",
+    items: ["There is a sofa.", "There are three doors.", "There is a bed."] },
+  { id: "pick", type: "pick", title: "Choose", kw: "ROOF", items: ["There [is|are] a cat.", "There [is|are] two dogs."], key: [0, 1] },
+  { id: "dlg", type: "textgaps", title: "Dialogue", kw: "KEY", speakers: true, keyFrom: "dlg",
+    text: "Ann: How many chairs {1} there?\nBen: Four. {2} there a TV?\nAnn: No, there {3}." },
+  { id: "order", type: "order", mode: "class", interaction: "pairs", title: "Order the dialogue", kw: "BOX",
+    lines: [["Ann", "Hi! Is there a park near your house?"], ["Ben", "Yes, there is."], ["Ann", "Great!"]] },
+  { id: "write", type: "writing", teacher: true, title: "My room", minWords: 15, start: "In my room there is ",
+    instr: "Describe your room (15 words)." }
+]
+};
+/* ===== TEACHER ONLY ===== */
+PAGE.TEACHER = {
+  card: { target: [["describe a room with there is / there are", "opisać pokój za pomocą there is / there are"], ["ask Is there…? / Are there…?", "zadawać pytania Is there…? / Are there…?"]], criteria: [["I can say what is in my room.", "Potrafię powiedzieć, co jest w moim pokoju."], ["I can use <i>is</i> for one thing and <i>are</i> for more.", "Używam <i>is</i> dla jednej rzeczy i <i>are</i> dla wielu."]], language: "there is / there are, furniture", pages: "SB p. 1 · WB p. 1 · TB p. 1", time: "45 min" },
+  warmup: [
+    { id: "w1", type: "talk", title: "What's in your bag?", mode: "both", items: [["What's in your bag?", "There's a pencil case and two books."], ["Is there a phone in your bag?", "Yes, there is. / No, there isn't."], "How many pens are there?"] }
+  ],
+  smalltalk: [["How are you today?", "I'm fine, thanks."], ["What's the weather like?", "It's sunny."], ["Is there a park near your house?", "Yes, there is."], "What did you have for breakfast?"],
+  roundup: [{ id: "ru", type: "flashcards", title: "Round-up: last lesson", from: "fc", mode: "both" }],
+  games: [
+    { id: "w2", type: "reveal", title: "Guess the room", mode: "both", steps: ["a bed", "a wardrobe", "a lamp", "a desk"], answer: "a bedroom" },
+    { id: "w3", type: "timed", title: "Memory picture", mode: "both", img: "sdA", seconds: 10, question: "What was in the picture? There is… / There are…", answers: "a window, a sofa, a sun, a plant, a red box" },
+    { id: "p1", type: "picture", view: "blur", title: "Blurry picture", mode: "both", img: "sdA", answer: "a living room" },
+    { id: "p2", type: "picture", view: "lens", title: "Magnifying glass", mode: "both", img: "sdB", answer: "a sofa, a window, a picture" },
+    { id: "p3", type: "picture", view: "flash", title: "Flash picture", mode: "both", img: "sdA", question: "What did you see?" },
+    { id: "w4", type: "oddone", title: "Odd one out", mode: "both", sets: [{ items: ["sofa", "bed", "lamp", "kitchen"], odd: 3, why: "kitchen is a room, the rest is furniture" }, { items: ["a", "b", "c", "🍎"], odd: 3, why: "it's food, not furniture" }] },
+    { id: "w5", type: "spotdiff", title: "Spot the difference", mode: "both", a: "sdA", b: "sdB", diffs: [[82.5, 20, 7], [17.5, 53, 7], [45, 83, 9], [66, 38, 6]] },
+    { id: "w6", type: "findfour", title: "Find four", mode: "both", groups: [{ name: "Rooms", words: ["kitchen", "bedroom", "bathroom", "hall"] }, { name: "Furniture", words: ["sofa", "bed", "desk", "chair"] }, { name: "Prepositions", words: ["in", "on", "under", "next to"] }, { name: "Colours", words: ["red", "blue", "green", "pink"] }] },
+    { id: "g1", type: "xo", title: "Noughts and crosses", from: "fc", deck: 0, mode: "both" },
+    { id: "g2", type: "race", title: "Team race", from: "fc", mode: "class", teams: ["Team A", "Team B"], steps: 8 },
+    { id: "g3", type: "five", title: "Name five", mode: "class", categories: ["Rooms", "Furniture", "Things in your bag", "Colours"] }
+  ],
+  end: [
+    { id: "exit", type: "html", title: "Exit ticket", mode: "both", html: "<ol><li>Say one sentence with <b>there is</b>.</li><li>Say one sentence with <b>there are</b>.</li></ol>" }
+  ],
+  fast: [["Worksheet (print)", "https://example.com/ws", "1 page"], ["Extra support worksheet", "https://example.com/es", "easier"]],
+  tips: {
+    w2: [["CC", "1:1: the student gives the clues and you guess."]],
+    match: [["GAME", "Before the task: play <b>Blurry picture</b> or <b>Odd one out</b> (Games). Without the page: <i>Pin on back</i> with furniture words."]],
+    gaps: [["TB", "Students often say <i>There is two…</i>. Point at the number."], ["CC", "Ask: <i>How many…?</i> after each sentence."], ["SEN", "Give a word bank (is / are) and only 4 sentences."], ["GAME", "After checking: <b>Noughts and crosses</b> with sentences."]],
+    exit: [["CC", "Collect answers orally before the bell."]]
+  },
+  stages: { tf: { lead: "Do you like your room? What's in it?", predict: "Look at the picture. What is in Ann's room?", gist: "Listen: is Ann happy with her room?", detail: "Listen again and do the true/false task.", follow: "Pairs: describe your room, partner draws it.", replay: ["Stand up when you hear a piece of furniture."], mistakes: [["There is a sofa and a bath in my room.", "There is a sofa and a bed in my room."], ["Just two.", "Just one."]] } },
+  transcripts: { tf: "Ann: There is a sofa and a bed in my room.\nBen: How many doors?\nAnn: Just one." },
+  models: { write: ["CC", "In my room there is a bed, a desk and a big window. There are two lamps and lots of books."] },
+  links: {}
+};
