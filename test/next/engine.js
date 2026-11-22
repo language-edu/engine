@@ -471,6 +471,9 @@ function linkList(list){
 function teacherBlocks(ex){
   const out = [], id = ex.id;
   const tips = (T.tips || {})[id];
+  /* lead-in przy ćwiczeniu: leads: { id: [źródło, html, obrazek?] } (np. „Count the bees” z TB) */
+  const ld = (T.leads || {})[id];
+  if (ld){ const box = el("div", null, el("div", { class: "ttip" }, srcTag(ld[0]), el("div", { html: ld[1] }))); if (ld[2]) box.append(el("img", { src: IMAGES[ld[2]] || ld[2], alt: "", class: "photo", style: "display:block;max-width:min(100%,520px);margin-top:8px" })); out.push(tt("🚀 Lead-in", "", box)); }
   if (tips && tips.length) out.push(tt("🧑‍🏫 Teacher tips", "", tips.map(([s, h]) => el("div", { class: "ttip" }, srcTag(s), el("div", { html: h })))));
   const ky = (T.keys || {})[id];
   if (ky) out.push(tt("🔑 Answer key (TB)", "", el("div", { class: "trans", html: ky })));
@@ -1223,6 +1226,90 @@ const RENDER = {
       groups.forEach(([w], i) => { const gd = s.v[i] === ex.key[i]; if (gd) ok++; w.classList.remove("st-ok", "st-bad"); w.classList.add(gd ? "st-ok" : "st-bad"); });
       report(r, ok, groups.length, new Set(), ok < groups.length);
     }, () => { s.v = {}; save(); groups.forEach(([w, p]) => { w.classList.remove("st-ok", "st-bad"); p(); }); });
+  },
+
+  /* --- hive: plaster miodu – klikanie kafelków po kolei (sąsiednie), zdania układają się obok.
+     cells: [[wiersz, kolumna*2, "słowo"]], path: [indeksy komórek po kolei], marks: [[wiersz, kol*2, "START"]] --- */
+  hive(r){
+    const ex = r.ex, s = st(ex.id); s.n = s.n || 0;
+    const C = ex.cells, P = ex.path, marks = ex.marks || [];
+    const all = C.concat(marks);
+    const maxX = Math.max(...all.map(c => c[1])), maxY = Math.max(...all.map(c => c[0])), minX = Math.min(...all.map(c => c[1]));
+    const cols = (maxX - minX) / 2 + 1, w = 100 / cols, hw = 1.1547;   /* szerokość kafelka w % szerokości plastra */
+    const H = ((maxY * 0.75) + 1) * hw * w;                             /* wysokość plastra w % szerokości */
+    const board = el("div", { class: "hive noselect", style: "padding-top:" + H + "%" });
+    const pos = (row, x) => "left:" + ((x - minX) / 2 * w) + "%;top:" + (row * 0.75 * hw * w / H * 100) + "%;width:" + w + "%;height:" + (hw * w / H * 100) + "%";
+    const btns = C.map(([row, x, word], i) => {
+      const b = el("button", { type: "button", class: "hx" + (word.replace(/[^A-Za-z]/g, "").length > 6 ? " long" : ""), style: pos(row, x) }, el("span", null, word));
+      b.addEventListener("click", () => tap(i)); board.append(b); return b;
+    });
+    marks.forEach(([row, x, t]) => board.append(el("div", { class: "hx mark", style: pos(row, x) }, el("span", null, t))));
+    const out = el("ol", { class: "hivesent" });
+    const fb = el("p", { class: "hint hivefb" });
+    function tap(i){
+      if (s.n >= P.length) return;
+      if (i === P[s.n]){ s.n++; save(); paint(); if (s.n === P.length) report(r, 1, 1, new Set(), false); return; }
+      if (P.slice(0, s.n).includes(i)) return;
+      btns[i].classList.add("miss"); setTimeout(() => btns[i].classList.remove("miss"), 500);
+      fb.textContent = s.n ? "Not this one. The next word must touch the last green cell." : "Start at START.";
+    }
+    function paint(){
+      btns.forEach((b, i) => { b.classList.toggle("done", P.slice(0, s.n).includes(i)); b.classList.toggle("last", s.n > 0 && P[s.n - 1] === i); });
+      out.innerHTML = ""; let cur = [];
+      P.slice(0, s.n).forEach(i => { cur.push(C[i][2]); if (/[.?!]$/.test(C[i][2])){ out.append(el("li", null, cur.join(" "))); cur = []; } });
+      if (cur.length) out.append(el("li", { class: "cur" }, cur.join(" ") + " …"));
+      fb.textContent = s.n === P.length ? "Finish! 🐝" : s.n ? "" : "Click the first word next to START.";
+    }
+    r.body.append(el("div", { class: "hivewrap" }, board, el("div", { class: "hiveside" }, fb, out)));
+    paint();
+    r.solvers = () => P.map((ci, k) => () => { if (s.n === k){ s.n++; save(); paint(); } });
+    addControls(r, () => { if (s.n === P.length) report(r, 1, 1, new Set(), false); else showFb(r, "warn", "Keep going! " + s.n + " / " + P.length + " words."); },
+      () => { s.n = 0; save(); paint(); });
+  },
+
+  /* --- puzzle: paski obrazka do ułożenia w ramkach (np. dwa ogrody). pieces: [[img, grupa]], groups: ["nazwa", …];
+     sprawdzana jest przynależność do grupy, kolejność dowolna --- */
+  puzzle(r){
+    const ex = r.ex, s = st(ex.id); s.at = s.at || {};   /* s.at[slot] = indeks paska */
+    const G = ex.groups, per = ex.pieces.length / G.length;
+    const order = s.order || (s.order = shuffle(ex.pieces.map((_, i) => i)));
+    let sel = null;
+    const tray = el("div", { class: "pztray" });
+    const frames = el("div", { class: "pzframes" });
+    const slots = [];
+    G.forEach((g, gi) => {
+      const fr = el("div", { class: "pzframe" }, el("div", { class: "pzname" }, g));
+      for (let k = 0; k < per; k++){
+        const id = gi + "-" + k;
+        const sl = el("div", { class: "pzslot", tabindex: "0", role: "button", "aria-label": g + " " + (k + 1) });
+        sl.addEventListener("click", () => { if (sel != null){ place(sel, id); } else if (s.at[id] != null){ delete s.at[id]; save(); paint(); } });
+        sl.addEventListener("dragover", e => e.preventDefault());
+        sl.addEventListener("drop", e => { e.preventDefault(); const pi = +e.dataTransfer.getData("text"); if (!isNaN(pi)) place(pi, id); });
+        slots.push([id, gi, sl]); fr.append(sl);
+      }
+      frames.append(fr);
+    });
+    const pieceEl = pi => {
+      const im = el("img", { src: IMAGES[ex.pieces[pi][0]], alt: "piece", draggable: "true", class: "pzpiece" });
+      im.addEventListener("dragstart", e => e.dataTransfer.setData("text", String(pi)));
+      im.addEventListener("click", ev => { ev.stopPropagation(); if (im.parentElement.classList.contains("pzslot")){ const id = Object.keys(s.at).find(k => s.at[k] === pi); delete s.at[id]; save(); paint(); return; } sel = sel === pi ? null : pi; paint(); });
+      return im;
+    };
+    function place(pi, id){ for (const k in s.at) if (s.at[k] === pi) delete s.at[k]; s.at[id] = pi; sel = null; save(); paint(); }
+    function paint(){
+      tray.innerHTML = "";
+      order.filter(pi => !Object.values(s.at).includes(pi)).forEach(pi => { const im = pieceEl(pi); if (sel === pi) im.classList.add("sel"); tray.append(im); });
+      slots.forEach(([id, , sl]) => { sl.innerHTML = ""; sl.classList.remove("st-ok", "st-bad"); if (s.at[id] != null) sl.append(pieceEl(s.at[id])); });
+      frames.querySelectorAll(".pzframe").forEach((f, gi) => f.classList.toggle("full", slots.filter(x => x[1] === gi).every(([id]) => s.at[id] != null && ex.pieces[s.at[id]][1] === gi)));
+    }
+    r.body.append(el("div", { class: "pz noselect" }, tray, frames));
+    paint();
+    r.solvers = () => ex.pieces.map(([, g], pi) => () => { const free = slots.find(([id, gi]) => gi === g && (s.at[id] == null || ex.pieces[s.at[id]][1] !== gi)); if (free) place(pi, free[0]); });
+    addControls(r, () => {
+      let ok = 0;
+      slots.forEach(([id, gi, sl]) => { if (s.at[id] == null) return; const good = ex.pieces[s.at[id]][1] === gi; if (good) ok++; sl.classList.add(good ? "st-ok" : "st-bad"); });
+      report(r, ok, ex.pieces.length, new Set(), ok < Object.keys(s.at).length);
+    }, () => { s.at = {}; s.order = shuffle(ex.pieces.map((_, i) => i)); order.splice(0, order.length, ...s.order); sel = null; save(); paint(); });
   },
 
   article(r){

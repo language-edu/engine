@@ -725,3 +725,34 @@ ol.talk .tans{margin:4px 0 10px}
 ol.talk .tans summary{padding:3px 10px;font-size:14px}
 .tm{max-width:460px}
 @media (min-width:760px){ol.talk > li:last-child:nth-child(odd):not(:first-child){grid-column:1 / -1;justify-self:center;width:calc(50% - 20px)}}
+
+/* hive (plaster miodu) */
+.hivewrap{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:700px){.hivewrap{grid-template-columns:1fr}}
+.hive{position:relative;width:100%;max-width:600px}
+.hx{position:absolute;border:0;padding:0;margin:0;background:#F2C94C;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;font-weight:600;font-size:clamp(9px,1.6vw,14px);line-height:1.05;color:#1D2A3A;transition:background .15s}
+.hx span{padding:0 2px;text-align:center;word-break:keep-all;overflow-wrap:normal;hyphens:none}
+.hx.long{font-size:clamp(7px,1.25vw,12px)}
+.hx:hover{background:#F7DA7A}
+.hx.done{background:#8BD17C}
+.hx.last{background:#4CAF50;color:#fff}
+.hx.miss{background:#E5534B;color:#fff}
+.hx.mark{background:#1D2A3A;color:#fff;cursor:default;font-size:clamp(8px,1.3vw,12px)}
+.hivesent{margin:8px 0 0;padding-left:1.6em}
+.hivesent li{margin:0 0 6px;font-weight:600}
+.hivesent li.cur{color:#2D5B8A;font-weight:500}
+/* puzzle (paski obrazka) */
+.pz{display:grid;gap:14px}
+.pztray{display:flex;flex-wrap:wrap;gap:8px;min-height:40px;padding:8px;background:#EEF3FA;border-radius:10px}
+.pztray .pzpiece{width:calc(50% - 4px);max-width:260px}
+.pzpiece{display:block;cursor:grab;border-radius:4px;outline:2px solid transparent}
+.pzpiece.sel{outline-color:#2D5B8A}
+.pzframes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:600px){.pzframes{grid-template-columns:1fr}}
+.pzframe{border:2px dashed #9AAFC7;border-radius:10px;padding:8px;display:grid;gap:0}
+.pzframe.full{border-style:solid;border-color:#4CAF50;background:#F2FAF0}
+.pzname{font-weight:700;color:#3B7D2E;margin-bottom:6px;text-align:center}
+.pzslot{min-height:46px;background:#FFFDF6;border:1px dashed #D5DCE6;display:flex;align-items:center;justify-content:center}
+.pzslot .pzpiece{width:100%}
+.pzslot.st-ok{outline:2px solid #4CAF50}
+.pzslot.st-bad{outline:2px solid #E5534B}
