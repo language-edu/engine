@@ -95,6 +95,7 @@ function el(tag, attrs, ...kids){
     if (k === "class") e.className = attrs[k];
     else if (k === "html") e.innerHTML = attrs[k];
     else if (k.startsWith("on")) e.addEventListener(k.slice(2), attrs[k]);
+    else if ((k === "href" || k === "src") && /^\s*(javascript|vbscript):/i.test(String(attrs[k]))) e.setAttribute(k, "#");   /* linki z arkusza: bez javascript: */
     else e.setAttribute(k, attrs[k]);
   }
   kids.flat().forEach(k => { if (k != null) e.append(k.nodeType ? k : document.createTextNode(k)); });
