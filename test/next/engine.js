@@ -210,7 +210,7 @@ function makeCard(ex, num){
   if (ex.bookMedia) [].concat(ex.bookMedia).forEach(m => sec.append(mediaBlock(m)));
   const pics = ex.pics ? el("div", { class: "bkpics noselect" }, ex.pics.map(k => el("img", { src: IMAGES[k] || k, alt: "", draggable: "false" }))) : null;
   if (pics && ex.side === false) sec.append(pics);
-  if (ex.pre) sec.append(el("div", { class: "bkpre", html: ex.pre }));
+  if (ex.pre){ const pre = el("div", { class: "bkpre", html: ex.pre }); pre.querySelectorAll("img[data-img]").forEach(i => { i.src = IMAGES[i.dataset.img] || ""; }); sec.append(pre); }   /* <img data-img="klucz"> = obrazek z IMAGES */
   const body = el("div", { class: "body" });
   /* obrazek z książki obok zadania (side: false = nad zadaniem) */
   const hasAudio = [ex.media].concat(ex.bookMedia || []).some(k => k && ((CONFIG.media || {})[k] || {}).type === "audio");
@@ -1233,7 +1233,7 @@ const RENDER = {
   hive(r){
     const ex = r.ex, s = st(ex.id); s.n = s.n || 0;
     const C = ex.cells, P = ex.path, marks = ex.marks || [];
-    const all = C.concat(marks);
+    const all = C.concat(marks, (ex.bees || []).map(b => [b[0], b[1]]));
     const maxX = Math.max(...all.map(c => c[1])), maxY = Math.max(...all.map(c => c[0])), minX = Math.min(...all.map(c => c[1]));
     const cols = (maxX - minX) / 2 + 1, w = 100 / cols, hw = 1.1547;   /* szerokość kafelka w % szerokości plastra */
     const H = ((maxY * 0.75) + 1) * hw * w;                             /* wysokość plastra w % szerokości */
@@ -1244,6 +1244,16 @@ const RENDER = {
       b.addEventListener("click", () => tap(i)); board.append(b); return b;
     });
     marks.forEach(([row, x, t]) => board.append(el("div", { class: "hx mark", style: pos(row, x) }, el("span", null, t))));
+    /* pszczoły dookoła do policzenia: bees: [[wiersz, kol*2, obrót]] */
+    s.bees = s.bees || [];
+    const beeCount = el("div", { class: "beecount" });
+    const beeEls = (ex.bees || []).map(([row, x, rot], bi) => {
+      const be = el("button", { type: "button", class: "bee", style: pos(row, x) + ";--r:" + (rot || 0) + "deg", "aria-label": "bee" }, "🐝");
+      be.addEventListener("click", () => { if (!s.bees.includes(bi)) s.bees.push(bi); else s.bees = s.bees.filter(x => x !== bi); save(); paintBees(); });
+      board.append(be); return be;
+    });
+    function paintBees(){ beeEls.forEach((b, i) => b.classList.toggle("counted", s.bees.includes(i))); beeCount.textContent = "🐝 Bees counted: " + s.bees.length + (s.bees.length === beeEls.length ? " – all of them! ✔" : ""); }
+    if (beeEls.length) paintBees();
     const out = el("ol", { class: "hivesent" });
     const fb = el("p", { class: "hint hivefb" });
     function tap(i){
@@ -1260,11 +1270,56 @@ const RENDER = {
       if (cur.length) out.append(el("li", { class: "cur" }, cur.join(" ") + " …"));
       fb.textContent = s.n === P.length ? "Finish! 🐝" : s.n ? "" : "Click the first word next to START.";
     }
-    r.body.append(el("div", { class: "hivewrap" }, board, el("div", { class: "hiveside" }, fb, out)));
+    r.body.append(el("div", { class: "hivewrap" }, board, el("div", { class: "hiveside" }, beeEls.length ? beeCount : null, fb, out)));
     paint();
     r.solvers = () => P.map((ci, k) => () => { if (s.n === k){ s.n++; save(); paint(); } });
     addControls(r, () => { if (s.n === P.length) report(r, 1, 1, new Set(), false); else showFb(r, "warn", "Keep going! " + s.n + " / " + P.length + " words."); },
-      () => { s.n = 0; save(); paint(); });
+      () => { s.n = 0; s.bees = []; save(); paint(); if (beeEls.length) paintBees(); });
+  },
+
+  /* --- snake: wąż wyrazowy – klik w pierwszą i ostatnią literę zdania (jak wykreślanka), potem wpisanie zdań.
+     text: litery bez spacji, parts: [[fragment, ["Zdanie.", "wersja2"]]], width: liter w rzędzie --- */
+  snake(r){
+    const ex = r.ex, s = st(ex.id); s.found = s.found || []; s.v = s.v || {};
+    const T = ex.text, W = ex.width || 14, N = T.length;
+    const starts = []; let pos0 = 0; ex.parts.forEach(([frag]) => { starts.push(pos0); pos0 += frag.length; });
+    const grid = el("div", { class: "snake noselect", style: "--w:" + W });
+    const cells = [];
+    const rows = Math.ceil(N / W);
+    for (let rw = 0; rw < rows; rw++){
+      const idx = []; for (let c = 0; c < W; c++){ const i = rw * W + c; if (i < N) idx.push(i); }
+      if (rw % 2) idx.reverse();   /* co drugi rząd od prawej – wąż */
+      const row = el("div", { class: "snrow" + (rw % 2 ? " rev" : "") });
+      if (rw % 2) for (let k = idx.length; k < W; k++) row.append(el("span", { class: "snpad" }));
+      idx.forEach(i => { const b = el("button", { type: "button", class: "sncell" }, T[i]); b.addEventListener("click", () => tap(i)); cells[i] = b; row.append(b); });
+      grid.append(row);
+    }
+    let start = null;
+    const info = el("div", { class: "wsinfo" });
+    function tap(i){
+      if (start == null){ start = i; paint(); return; }
+      const a = Math.min(start, i), z = Math.max(start, i); start = null;
+      const pi = ex.parts.findIndex(([frag], k) => starts[k] === a && a + frag.length - 1 === z);
+      if (pi >= 0 && !s.found.includes(pi)){ s.found.push(pi); save(); }
+      else if (pi < 0){ for (let k = a; k <= z; k++){ const c = cells[k]; c.classList.add("miss"); setTimeout(() => c.classList.remove("miss"), 450); } }
+      paint();
+    }
+    function paint(){
+      cells.forEach(c => c.classList.remove("found", "start", "f0", "f1", "f2", "f3"));
+      s.found.forEach(pi => { for (let k = starts[pi]; k < starts[pi] + ex.parts[pi][0].length; k++) cells[k].classList.add("found", "f" + (pi % 4)); });
+      if (start != null) cells[start].classList.add("start");
+      info.textContent = "Found: " + s.found.length + " / " + ex.parts.length;
+    }
+    const ol = el("ol", { class: "items" }); const fields = [];
+    ex.parts.forEach(([, alts], i) => {
+      const f = guard(el("input", { class: "gap", type: "text", style: "width:min(100%,60ch)", "aria-label": "sentence " + (i + 1) }));
+      f.value = s.v[i] || ""; f.addEventListener("input", () => { s.v[i] = f.value; save(); setState(f, ""); });
+      fields.push([f, alts]); ol.append(el("li", null, f));
+    });
+    r.body.append(el("div", { class: "ws" }, grid, info), el("p", { class: "hint" }, "Write the sentences (capital letter and full stop):"), ol);
+    paint();
+    r.solvers = () => ex.parts.map(([, alts], i) => () => { if (!s.found.includes(i)){ s.found.push(i); save(); paint(); } fill(fields[i][0], alts); });
+    addControls(r, () => gradeFields(r, fields), () => { s.v = {}; s.found = []; start = null; save(); fields.forEach(([f]) => { f.value = ""; setState(f, ""); }); paint(); });
   },
 
   /* --- puzzle: paski obrazka do ułożenia w ramkach (np. dwa ogrody). pieces: [[img, grupa]], groups: ["nazwa", …];
@@ -1296,20 +1351,38 @@ const RENDER = {
       return im;
     };
     function place(pi, id){ for (const k in s.at) if (s.at[k] === pi) delete s.at[k]; s.at[id] = pi; sel = null; save(); paint(); }
-    function paint(){
+    let paint = function(){
       tray.innerHTML = "";
       order.filter(pi => !Object.values(s.at).includes(pi)).forEach(pi => { const im = pieceEl(pi); if (sel === pi) im.classList.add("sel"); tray.append(im); });
       slots.forEach(([id, , sl]) => { sl.innerHTML = ""; sl.classList.remove("st-ok", "st-bad"); if (s.at[id] != null) sl.append(pieceEl(s.at[id])); });
       frames.querySelectorAll(".pzframe").forEach((f, gi) => f.classList.toggle("full", slots.filter(x => x[1] === gi).every(([id]) => s.at[id] != null && ex.pieces[s.at[id]][1] === gi)));
+    };
+    /* podpowiedzi odsłaniane po kolei */
+    const clueBox = el("div", { class: "pzclues" });
+    if (ex.clues && ex.clues.length){
+      s.clues = s.clues || 0;
+      const list = el("ol", { class: "pzcl" }), btn = el("button", { type: "button", class: "btn ghost small" });
+      const pc = () => { list.innerHTML = ""; ex.clues.slice(0, s.clues).forEach(c => list.append(el("li", null, c))); btn.textContent = "💡 Clue " + (s.clues + 1); btn.hidden = s.clues >= ex.clues.length; };
+      btn.addEventListener("click", () => { s.clues++; save(); pc(); });
+      clueBox.append(btn, list); pc(); clueBox._pc = pc;
     }
-    r.body.append(el("div", { class: "pz noselect" }, tray, frames));
+    const done = el("div", { class: "pzdone" });
+    r.body.append(clueBox, el("div", { class: "pz noselect" }, tray, frames), done);
+    const _paint = paint;
+    paint = function(){
+      _paint();
+      const all = slots.every(([id, gi]) => s.at[id] != null && ex.pieces[s.at[id]][1] === gi);
+      done.innerHTML = "";
+      if (all && ex.full){ done.append(el("p", { class: "fb show ok" }, "Well done! Here are the whole pictures:"), el("div", { class: "pzfull" }, G.map((g, gi) => el("figure", null, el("img", { src: IMAGES[ex.full[gi]] || ex.full[gi], alt: g, class: "photo" }), el("figcaption", null, g))))); }
+      r.body.querySelector(".pz").style.display = all && ex.full ? "none" : "";
+    };
     paint();
     r.solvers = () => ex.pieces.map(([, g], pi) => () => { const free = slots.find(([id, gi]) => gi === g && (s.at[id] == null || ex.pieces[s.at[id]][1] !== gi)); if (free) place(pi, free[0]); });
     addControls(r, () => {
       let ok = 0;
       slots.forEach(([id, gi, sl]) => { if (s.at[id] == null) return; const good = ex.pieces[s.at[id]][1] === gi; if (good) ok++; sl.classList.add(good ? "st-ok" : "st-bad"); });
       report(r, ok, ex.pieces.length, new Set(), ok < Object.keys(s.at).length);
-    }, () => { s.at = {}; s.order = shuffle(ex.pieces.map((_, i) => i)); order.splice(0, order.length, ...s.order); sel = null; save(); paint(); });
+    }, () => { s.at = {}; s.clues = 0; if (clueBox._pc) clueBox._pc(); s.order = shuffle(ex.pieces.map((_, i) => i)); order.splice(0, order.length, ...s.order); sel = null; save(); paint(); });
   },
 
   article(r){
